@@ -63,7 +63,7 @@ func goroutineLeakCheck(t testing.TB) func() {
 	numStart := runtime.NumGoroutine()
 	return func() {
 		var numNow int
-		for range iter.N(1) {
+		for _ = range iter.N(1) {
 			numNow = runtime.NumGoroutine()
 			if numNow == numStart {
 				return
@@ -219,7 +219,7 @@ func connectSelfLots(n int, t testing.TB) {
 		t.Fatal(err)
 	}
 	go func() {
-		for range iter.N(n) {
+		for _ = range iter.N(n) {
 			c, err := s.Accept()
 			if err != nil {
 				log.Fatal(err)
@@ -230,7 +230,7 @@ func connectSelfLots(n int, t testing.TB) {
 	dialErr := make(chan error)
 	connCh := make(chan net.Conn)
 	dialSema := make(chan struct{}, backlog)
-	for range iter.N(n) {
+	for _ = range iter.N(n) {
 		go func() {
 			dialSema <- struct{}{}
 			c, err := s.Dial(s.Addr().String())
@@ -243,7 +243,7 @@ func connectSelfLots(n int, t testing.TB) {
 		}()
 	}
 	conns := make([]net.Conn, 0, n)
-	for range iter.N(n) {
+	for _ = range iter.N(n) {
 		select {
 		case c := <-connCh:
 			conns = append(conns, c)
@@ -274,13 +274,13 @@ func TestConnectSelf(t *testing.T) {
 }
 
 func BenchmarkConnectSelf(b *testing.B) {
-	for range iter.N(b.N) {
+	for _ = range iter.N(b.N) {
 		connectSelfLots(2, b)
 	}
 }
 
 func BenchmarkNewCloseSocket(b *testing.B) {
-	for range iter.N(b.N) {
+	for _ = range iter.N(b.N) {
 		s, err := NewSocket("udp", "localhost:0")
 		if err != nil {
 			b.Fatal(err)
@@ -305,7 +305,7 @@ func TestRejectDialBacklogFilled(t *testing.T) {
 		}
 	}
 	// Fill the backlog.
-	for range iter.N(backlog + 1) {
+	for _ = range iter.N(backlog + 1) {
 		go dial()
 	}
 	s.mu.Lock()
