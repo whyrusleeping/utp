@@ -1248,9 +1248,6 @@ func (s *Socket) registerConn(recvID uint16, remoteAddr resolvedAddrStr, c *Conn
 		}
 		// log.Println("detached", key)
 		delete(s.conns, key)
-		if len(s.conns) == 0 {
-			s.pc.Close()
-		}
 	}
 	return true
 }
